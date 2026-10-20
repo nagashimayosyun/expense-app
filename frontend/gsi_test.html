@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSI コールバックテスト</title>
+    <!-- 認証ライブラリのロード -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <div id="status" style="padding: 50px; text-align: center; font-size: 20px;">
+        GSI 認証コールバック待ち...
+    </div>
+
+    <script>
+        // ⭐ ⭐ 【重要】実際の CLIENT_ID に置き換えてください ⭐ ⭐
+        const GOOGLE_CLIENT_ID = "158433107525-t7vom0ubn2t6j3h024tmjgf8k1lpst71.apps.googleusercontent.com";
+
+        // 1. コールバック関数
+        function handleCredentialResponse(response) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.backgroundColor = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.textContent = '✅ コールバック成功: IDトークンを受信しました。';
+            console.log("✅ GSI コールバックが正常に実行されました！トークン:", response.credential);
+            // 成功したら、ここでアプリへのPOST処理に進む
+        }
+        
+        // 2. GSIの初期化とプロンプト
+        function initializeGsi() {
+            if (window.google) {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleCredentialResponse, // 成功時のコールバック
+                    auto_select: true, 
+                    cancel_on_tap_outside: false,
+                    // エラー捕捉用 (原因が特定できる)
+                    error_callback: (error) => {
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.style.backgroundColor = '#f8d7da';
+                        statusDiv.style.color = '#721c24';
+                        statusDiv.textContent = '🛑 GSI エラーが発生しました。コンソールを確認してください。';
+                        console.error("🛑 GSI Error Caught:", error);
+                    }
+                });
+                
+                // プロンプト表示
+                window.google.accounts.id.prompt();
+            } else {
+                // ライブラリロード待ち
+                setTimeout(initializeGsi, 100);
+            }
+        }
+
+        initializeGsi();
+    </script>
+</body>
+</html>
